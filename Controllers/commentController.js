@@ -26,6 +26,8 @@ export const createComment = async (req, res) => {
       },
       { new: true }
     ).populate("comments");
+    //populate the comments array with comment documents
+    
 
   } catch (error) {
     res.status(500).json({
