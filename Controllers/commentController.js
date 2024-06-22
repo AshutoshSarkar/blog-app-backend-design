@@ -1,34 +1,33 @@
-import Comment from "./../Models/commentModel.js";
-import Post from "./../Models/postModel.js";
+import Comment from "../Models/commentModel.js";
+import Post from "../Models/postModel.js";
 
-//bussiness logic
-export const createComment = async (req, res) => {
+const createComment = async (req, res) => {
   try {
-    const { post, user, body } = req.body;
+    //get the post from the req
+    const { post, body, user } = req.body;
 
-    //created new comment
+    //create the comment
     const comment = new Comment({
       post,
-      user,
       body,
+      user,
     });
+       //saved the comment here
+    const savedComment =await comment.save();
 
-    //save the comment
-    const savedcomment = await comment.save();
+    //comment to find and update with the new comment 
+    const postToUpdate=await Post.findByIdAndUpdate(post,{
+      $push:{comments:savedComment._id},
+    },{new:true}).populate('comments').exec();
 
-    //find the post and update the comments array
-    const postToupdate = await Post.findByIdAndUpdate(
-      post,
-      {
-        $push: {
-          comments: savedcomment._id,
-        },
-      },
-      { new: true }
-    ).populate("comments");
-    //populate the comments array with comment documents
-    
+    //send the response
+    res.status(200).json({
+      success:true,
+      post:postToUpdate,
+    }
 
+    )
+  
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -36,3 +35,5 @@ export const createComment = async (req, res) => {
     });
   }
 };
+
+export default createComment;
